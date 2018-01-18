@@ -25,7 +25,11 @@ WITH RECURSIVE T(qry_id, atm_id, atm_keyclosure, atm_attvarslist, atm_attatomsli
   LEFT JOIN t_query_atom ON T.qry_id = t_query_atom.qry_id
   LEFT JOIN v_atom_varlists av ON av.atm_id = t_query_atom.atm_id AND # (T.atm_attvarslist & ((av.atm_keylist | av.atm_nkeylist) - T.atm_keyclosure)) > 0
 )
-SELECT qry_id, atm_id, max(atm_attvarslist) AS atm_attvarslist, max(atm_attatomslist) AS atm_attatomslist
+SELECT qry_id, atm_id, max(atm_attvarslist) AS atm_attvarslist, max(atm_attatomslist) - atm_id AS atm_attatomslist
 FROM T
 GROUP BY qry_id, atm_id;
+
+CREATE VIEW v_attack_graph AS
+SELECT qry_id, atm_id AS atm_id_from, unnest(atm_attatomslist) AS atm_id_to
+FROM v_attacks;
 

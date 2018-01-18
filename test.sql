@@ -64,6 +64,7 @@ SELECT * FROM v_query_string;
 SELECT * FROM v_atom_varlists;
 SELECT * FROM v_keyclosure;
 SELECT * FROM v_attacks;
+SELECT * FROM v_attack_graph;
 
 ROLLBACK;
 
