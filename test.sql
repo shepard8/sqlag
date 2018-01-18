@@ -21,6 +21,7 @@ BEGIN;
 \i query.sql
 \i selfjoinfree.sql
 \i keyclosure.sql
+\i attacks.sql
 
 SELECT f_constant('a') AS a \gset
 SELECT f_constant('b') AS b \gset
@@ -60,7 +61,9 @@ INSERT INTO t_query DEFAULT VALUES RETURNING qry_id AS qconstant \gset
 INSERT INTO t_query_free (qry_id, sbl_id, qfr_position) VALUES (:qconstant, :a, 1);
 
 SELECT * FROM v_query_string;
+SELECT * FROM v_atom_varlists;
 SELECT * FROM v_keyclosure;
+SELECT * FROM v_attacks;
 
 ROLLBACK;
 

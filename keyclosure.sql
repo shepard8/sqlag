@@ -35,16 +35,16 @@ FROM key NATURAL JOIN nkey;
 
 CREATE VIEW v_keyclosure AS
 WITH RECURSIVE T AS (
-  SELECT t_query_atom.qry_id, t_query_atom.atm_id, array_remove(array_agg(t_symbol.sbl_id), NULL) AS closure
+  SELECT t_query_atom.qry_id, t_query_atom.atm_id, array_remove(array_agg(t_symbol.sbl_id), NULL) AS atm_keyclosure
   FROM t_query_atom
   LEFT JOIN t_atom_symbol ON (t_query_atom.atm_id = t_atom_symbol.atm_id AND ats_key)
   LEFT JOIN t_symbol ON (t_atom_symbol.sbl_id = t_symbol.sbl_id AND NOT sbl_constant)
   GROUP BY t_query_atom.qry_id, t_query_atom.atm_id
   UNION
-  SELECT T.qry_id, T.atm_id, T.closure | v_atom_varlists.atm_nkeylist
+  SELECT T.qry_id, T.atm_id, T.atm_keyclosure | v_atom_varlists.atm_nkeylist
   FROM T
   LEFT JOIN t_query_atom ON t_query_atom.qry_id = T.qry_id AND t_query_atom.atm_id <> T.atm_id
-  LEFT JOIN v_atom_varlists ON v_atom_varlists.atm_id = t_query_atom.atm_id AND v_atom_varlists.atm_keylist <@ T.closure
+  LEFT JOIN v_atom_varlists ON v_atom_varlists.atm_id = t_query_atom.atm_id AND v_atom_varlists.atm_keylist <@ T.atm_keyclosure
 )
-SELECT qry_id, atm_id, max(closure) AS closure FROM T GROUP BY qry_id, atm_id;
+SELECT qry_id, atm_id, max(atm_keyclosure) AS atm_keyclosure FROM T GROUP BY qry_id, atm_id;
 
