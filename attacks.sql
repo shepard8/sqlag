@@ -24,10 +24,21 @@ WITH RECURSIVE T(qry_id, atm_id, atm_keyclosure, atm_attvarslist, atm_attatomsli
   FROM T
   LEFT JOIN t_query_atom ON T.qry_id = t_query_atom.qry_id
   LEFT JOIN v_atom_varlists av ON av.atm_id = t_query_atom.atm_id AND # (T.atm_attvarslist & ((av.atm_keylist | av.atm_nkeylist) - T.atm_keyclosure)) > 0
+),
+V AS (
+  SELECT qry_id, atm_id, array_agg(sbl_id) AS atm_attvarslist
+  FROM (SELECT DISTINCT qry_id, atm_id, unnest(atm_attvarslist) AS sbl_id FROM T) U
+  GROUP BY qry_id, atm_id
+),
+A AS (
+  SELECT qry_id, atm_id, array_agg(atm_id_attacked) AS atm_attatomslist
+  FROM (SELECT DISTINCT qry_id, atm_id, unnest(atm_attatomslist - atm_id) AS atm_id_attacked FROM T) U
+  GROUP BY qry_id, atm_id
 )
-SELECT qry_id, atm_id, max(atm_attvarslist) AS atm_attvarslist, max(atm_attatomslist) - atm_id AS atm_attatomslist
-FROM T
-GROUP BY qry_id, atm_id;
+SELECT qry_id, atm_id, atm_attvarslist, atm_attatomslist
+FROM t_query_atom
+NATURAL JOIN V
+NATURAL JOIN A;
 
 CREATE VIEW v_attack_graph AS
 SELECT qry_id, atm_id AS atm_id_from, unnest(atm_attatomslist) AS atm_id_to

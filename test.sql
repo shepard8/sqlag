@@ -22,6 +22,7 @@ BEGIN;
 \i selfjoinfree.sql
 \i keyclosure.sql
 \i attacks.sql
+\i rewritability.sql
 
 SELECT f_constant('a') AS a \gset
 SELECT f_constant('b') AS b \gset
@@ -60,11 +61,37 @@ INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:t2, f
 INSERT INTO t_query DEFAULT VALUES RETURNING qry_id AS qconstant \gset
 INSERT INTO t_query_free (qry_id, sbl_id, qfr_position) VALUES (:qconstant, :a, 1);
 
+INSERT INTO t_query DEFAULT VALUES RETURNING qry_id AS qcycle \gset
+INSERT INTO t_atom (atm_relation_name) VALUES ('R') RETURNING atm_id AS r \gset
+INSERT INTO t_atom (atm_relation_name) VALUES ('S') RETURNING atm_id AS s \gset
+INSERT INTO t_atom (atm_relation_name) VALUES ('T') RETURNING atm_id AS t \gset
+INSERT INTO t_atom (atm_relation_name) VALUES ('U') RETURNING atm_id AS u \gset
+INSERT INTO t_atom (atm_relation_name) VALUES ('V') RETURNING atm_id AS v \gset
+INSERT INTO t_query_atom (qry_id, atm_id) VALUES (:qcycle, :r);
+INSERT INTO t_query_atom (qry_id, atm_id) VALUES (:qcycle, :s);
+INSERT INTO t_query_atom (qry_id, atm_id) VALUES (:qcycle, :t);
+INSERT INTO t_query_atom (qry_id, atm_id) VALUES (:qcycle, :u);
+INSERT INTO t_query_atom (qry_id, atm_id) VALUES (:qcycle, :v);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:r, f_constant('a'), 1, true);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:r, f_variable('v'), 2, false);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:s, f_variable('v'), 1, true);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:s, f_variable('x1'), 2, false);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:t, f_variable('x1'), 1, true);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:t, f_variable('y1'), 2, true);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:t, f_variable('z'), 3, false);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:u, f_variable('x2'), 1, true);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:u, f_variable('y2'), 2, true);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:u, f_variable('z'), 3, false);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:v, f_constant('a'), 1, true);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:v, f_variable('x2'), 2, false);
+
 SELECT * FROM v_query_string;
 SELECT * FROM v_atom_varlists;
-SELECT * FROM v_keyclosure;
+SELECT * FROM v_keyclosure natural join t_atom order by qry_id, atm_id;
 SELECT * FROM v_attacks;
 SELECT * FROM v_attack_graph;
+SELECT * FROM v_query_rewritable;
+SELECT * FROM v_atom_stratum ORDER BY qry_id, atm_id;
 
 ROLLBACK;
 

@@ -46,5 +46,7 @@ WITH RECURSIVE T AS (
   LEFT JOIN t_query_atom ON t_query_atom.qry_id = T.qry_id AND t_query_atom.atm_id <> T.atm_id
   LEFT JOIN v_atom_varlists ON v_atom_varlists.atm_id = t_query_atom.atm_id AND v_atom_varlists.atm_keylist <@ T.atm_keyclosure
 )
-SELECT qry_id, atm_id, max(atm_keyclosure) AS atm_keyclosure FROM T GROUP BY qry_id, atm_id;
+SELECT qry_id, atm_id, array_agg(sbl_id) AS atm_keyclosure
+FROM (SELECT DISTINCT qry_id, atm_id, unnest(atm_keyclosure) AS sbl_id FROM T) U
+GROUP BY qry_id, atm_id;
 
