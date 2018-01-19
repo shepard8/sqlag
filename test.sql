@@ -23,6 +23,7 @@ BEGIN;
 \i keyclosure.sql
 \i attacks.sql
 \i rewritability.sql
+\i rewriting.sql
 
 SELECT f_constant('a') AS a \gset
 SELECT f_constant('b') AS b \gset
@@ -85,6 +86,21 @@ INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:u, f_
 INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:v, f_constant('a'), 1, true);
 INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:v, f_variable('x2'), 2, false);
 
+INSERT INTO t_query DEFAULT VALUES RETURNING qry_id AS qjoin \gset
+INSERT INTO t_atom (atm_relation_name) VALUES ('S') RETURNING atm_id AS s \gset
+INSERT INTO t_atom (atm_relation_name) VALUES ('R') RETURNING atm_id AS r \gset
+INSERT INTO t_atom (atm_relation_name) VALUES ('T') RETURNING atm_id AS t \gset
+INSERT INTO t_query_atom (qry_id, atm_id) VALUES (:qjoin, :r);
+INSERT INTO t_query_atom (qry_id, atm_id) VALUES (:qjoin, :s);
+INSERT INTO t_query_atom (qry_id, atm_id) VALUES (:qjoin, :t);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:t, f_variable('x'), 1, true);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:t, f_variable('y'), 2, false);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:s, f_variable('x'), 1, true);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:s, f_variable('z'), 2, false);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:r, f_variable('y'), 1, true);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:r, f_variable('z'), 2, true);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:r, f_constant('a'), 3, false);
+
 SELECT * FROM v_query_string;
 SELECT * FROM v_atom_varlists;
 SELECT * FROM v_keyclosure natural join t_atom order by qry_id, atm_id;
@@ -92,6 +108,7 @@ SELECT * FROM v_attacks;
 SELECT * FROM v_attack_graph;
 SELECT * FROM v_query_rewritable;
 SELECT * FROM v_atom_stratum ORDER BY qry_id, atm_id;
+SELECT * FROM v_atom_rew_order;
 
 ROLLBACK;
 

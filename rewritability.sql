@@ -42,12 +42,17 @@ WITH RECURSIVE BASE(qry_id, atm_id_from, atm_id_to, atm_stratum) AS (
   FROM t_query_atom qa
   LEFT JOIN v_attack_graph ag ON ag.qry_id = qa.qry_id AND ag.atm_id_from = qa.atm_id
 ),
+AGNULL(qry_id, atm_id_from, atm_id_to) AS (
+  SELECT qa.qry_id, atm_id, atm_id_to
+  FROM t_query_atom qa
+  LEFT JOIN v_attack_graph ag ON ag.qry_id = qa.qry_id AND ag.atm_id_from = qa.atm_id
+),
 T(qry_id, atm_id_from, atm_id_to, atm_stratum) AS (
   SELECT * FROM BASE
   UNION
   SELECT ft.qry_id, tt.atm_id_from, tt.atm_id_to, ft.atm_stratum + 1
   FROM T ft
-  INNER JOIN v_attack_graph tt ON ft.qry_id = tt.qry_id AND ft.atm_id_to = tt.atm_id_from
+  INNER JOIN AGNULL tt ON ft.qry_id = tt.qry_id AND ft.atm_id_to = tt.atm_id_from
   WHERE tt.atm_id_from NOT IN (SELECT atm_id FROM v_atom_cycle WHERE qry_id = ft.qry_id)
 )
 SELECT qry_id, atm_id_from AS atm_id, MAX(atm_stratum) AS atm_stratum FROM T GROUP BY qry_id, atm_id_from;
