@@ -22,6 +22,11 @@ SELECT ag1.qry_id
 FROM v_attack_graph ag1
 INNER JOIN v_attack_graph ag2 ON ag1.qry_id = ag2.qry_id AND ag1.atm_id_from = ag2.atm_id_to AND ag1.atm_id_to = ag2.atm_id_from;
 
+CREATE VIEW v_atom_cycle AS
+SELECT ag1.qry_id, ag1.atm_id_from AS atm_id
+FROM v_attack_graph ag1
+INNER JOIN v_attack_graph ag2 ON ag1.qry_id = ag2.qry_id AND ag1.atm_id_from = ag2.atm_id_to AND ag1.atm_id_to = ag2.atm_id_from;
+
 CREATE VIEW v_atom_stratum AS
 WITH RECURSIVE BASE(qry_id, atm_id_from, atm_id_to, atm_stratum) AS (
   SELECT qa.qry_id, qa.atm_id, atm_id_to, CASE
@@ -42,9 +47,8 @@ T(qry_id, atm_id_from, atm_id_to, atm_stratum) AS (
   UNION
   SELECT ft.qry_id, tt.atm_id_from, tt.atm_id_to, ft.atm_stratum + 1
   FROM T ft
-  INNER JOIN v_attack_graph tt ON ft.qry_id = tt.qry_id AND ft.atm_id_from = tt.atm_id_to
+  INNER JOIN v_attack_graph tt ON ft.qry_id = tt.qry_id AND ft.atm_id_to = tt.atm_id_from
+  WHERE tt.atm_id_from NOT IN (SELECT atm_id FROM v_atom_cycle WHERE qry_id = ft.qry_id)
 )
-SELECT qry_id, atm_id_from AS atm_id, MAX(atm_stratum) AS atm_stratum
-FROM T
-GROUP BY qry_id, atm_id_from;
+SELECT qry_id, atm_id_from AS atm_id, MAX(atm_stratum) AS atm_stratum FROM T GROUP BY qry_id, atm_id_from;
 
