@@ -119,6 +119,18 @@ INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:v, :z
 INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:w, :z, 1, true);
 INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:w, :x, 2, false);
 
+INSERT INTO t_query DEFAULT VALUES RETURNING qry_id AS qatomcheck \gset
+INSERT INTO t_atom (atm_relation_name) VALUES ('R') RETURNING atm_id AS r \gset
+INSERT INTO t_query_free (qry_id, sbl_id, qfr_position) VALUES (:qatomcheck, :z, 1);
+INSERT INTO t_query_atom (qry_id, atm_id) VALUES (:qatomcheck, :r);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:r, :x, 1, false);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:r, :x, 2, true);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:r, :y, 3, false);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:r, :y, 4, false);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:r, :y, 5, false);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:r, :z, 6, false);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:r, :z, 7, false);
+
 SELECT * FROM v_query_string;
 SELECT * FROM v_atom_varlists;
 SELECT * FROM v_keyclosure natural join t_atom order by qry_id, atm_id;
@@ -127,6 +139,11 @@ SELECT * FROM v_attack_graph;
 SELECT * FROM v_query_rewritable;
 SELECT * FROM v_atom_stratum ORDER BY qry_id, atm_id;
 SELECT * FROM v_atom_rew_order;
+SELECT * FROM v_atom_rew_free;
+SELECT * FROM v_symbol_rew_constrained;
+SELECT * FROM v_symbol_rew_constraint;
+
+
 
 ROLLBACK;
 
