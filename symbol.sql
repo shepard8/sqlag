@@ -24,9 +24,9 @@ CREATE TABLE t_symbol (
 
 CREATE VIEW v_symbol_string AS
 SELECT sbl_id, CASE
-    WHEN sbl_constant AND sbl_name ~ '^[a-hA-H][a-zA-Z_-]*$' THEN sbl_name
+    WHEN sbl_constant AND sbl_name ~ '^[a-hA-H][a-zA-Z0-9_-]*$' THEN sbl_name
     WHEN sbl_constant THEN '''' || replace(sbl_name, '''', '''''') || ''''
-    WHEN sbl_name ~ '^[i-zI-Z][a-zA-Z_-]*$' then sbl_name
+    WHEN sbl_name ~ '^[i-zI-Z][a-zA-Z0-9_-]*$' then sbl_name
     ELSE '"' || replace(sbl_name, '"', '""') || '"'
   END AS sbl_string
 FROM t_symbol;

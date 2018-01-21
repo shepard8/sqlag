@@ -29,7 +29,7 @@ CREATE TABLE t_atom_symbol (
 
 CREATE VIEW v_atom_relation_name_string AS (
   SELECT atm_id, CASE
-      WHEN atm_relation_name ~ '^[a-zA-Z_-]+$' THEN atm_relation_name
+      WHEN atm_relation_name ~ '^[A-Z][a-zA-Z0-9_-]*$' THEN atm_relation_name
       ELSE '"' || replace(atm_relation_name, '"', '""') || '"'
     END AS atm_relation_name_string
   FROM t_atom
@@ -38,9 +38,10 @@ CREATE VIEW v_atom_relation_name_string AS (
 CREATE VIEW v_atom_string AS
 SELECT atm_id,
     atm_relation_name_string || '(' ||
-      string_agg(sbl_string, ', ' ORDER BY ats_position) FILTER (WHERE ats_key) || '; ' ||
-      string_agg(sbl_string, ', ' ORDER BY ats_position) FILTER (WHERE NOT ats_key) || ')'
-    AS atm_string
+      string_agg (CASE
+        WHEN ats_key THEN '[' || sbl_string || ']'
+        ELSE sbl_string END, ', ' ORDER BY ats_position)
+      || ')' AS atm_string
 FROM v_atom_relation_name_string
 LEFT JOIN t_atom_symbol USING (atm_id)
 LEFT JOIN v_symbol_string USING (sbl_id)
