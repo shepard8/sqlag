@@ -101,6 +101,24 @@ INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:r, f_
 INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:r, f_variable('z'), 2, true);
 INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:r, f_constant('a'), 3, false);
 
+INSERT INTO t_query DEFAULT VALUES RETURNING qry_id AS qcyclic \gset
+INSERT INTO t_atom (atm_relation_name) VALUES ('R') RETURNING atm_id AS r \gset
+INSERT INTO t_atom (atm_relation_name) VALUES ('U') RETURNING atm_id AS u \gset
+INSERT INTO t_atom (atm_relation_name) VALUES ('V') RETURNING atm_id AS v \gset
+INSERT INTO t_atom (atm_relation_name) VALUES ('W') RETURNING atm_id AS w \gset
+INSERT INTO t_query_atom (qry_id, atm_id) VALUES (:qcyclic, :r);
+INSERT INTO t_query_atom (qry_id, atm_id) VALUES (:qcyclic, :u);
+INSERT INTO t_query_atom (qry_id, atm_id) VALUES (:qcyclic, :v);
+INSERT INTO t_query_atom (qry_id, atm_id) VALUES (:qcyclic, :w);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:r, :a, 1, true);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:r, :x, 2, false);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:u, :x, 1, true);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:u, :y, 2, false);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:v, :y, 1, true);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:v, :z, 2, false);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:w, :z, 1, true);
+INSERT INTO t_atom_symbol (atm_id, sbl_id, ats_position, ats_key) VALUES (:w, :x, 2, false);
+
 SELECT * FROM v_query_string;
 SELECT * FROM v_atom_varlists;
 SELECT * FROM v_keyclosure natural join t_atom order by qry_id, atm_id;

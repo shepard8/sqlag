@@ -17,11 +17,13 @@
 CREATE EXTENSION intarray;
 
 CREATE VIEW v_atom_varlists AS
-SELECT ta.atm_id, array_agg(tas.sbl_id) FILTER(WHERE ats_key) AS atm_keylist, array_agg(tas.sbl_id) FILTER(WHERE NOT ats_key) AS atm_nkeylist
-FROM t_atom ta
-LEFT JOIN t_atom_symbol tas ON ta.atm_id = tas.atm_id
-LEFT JOIN t_symbol ts ON ts.sbl_id = tas.sbl_id AND NOT sbl_constant
-GROUP BY ta.atm_id;
+SELECT atm_id,
+    coalesce(array_agg(sbl_id) FILTER(WHERE ats_key AND NOT sbl_constant), '{}'::int[]) AS atm_keylist,
+    coalesce(array_agg(sbl_id) FILTER(WHERE NOT ats_key AND NOT sbl_constant), '{}'::int[]) AS atm_nkeylist
+FROM t_atom
+LEFT JOIN t_atom_symbol USING (atm_id)
+LEFT JOIN t_symbol USING (sbl_id)
+GROUP BY atm_id;
 
 CREATE VIEW v_keyclosure AS
 WITH RECURSIVE T AS (
