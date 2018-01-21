@@ -24,6 +24,7 @@ BEGIN;
 \i attacks.sql
 \i rewritability.sql
 \i rewriting.sql
+\i drc.sql
 
 SELECT f_constant('a') AS a \gset
 SELECT f_constant('b') AS b \gset
@@ -142,6 +143,12 @@ SELECT * FROM v_atom_rew_order;
 SELECT * FROM v_atom_rew_free;
 SELECT * FROM v_symbol_rew_constrained;
 SELECT * FROM v_symbol_rew_constraint;
+SELECT * FROM v_atom_drc_exists;
+SELECT * FROM v_atom_drc_forall;
+SELECT * FROM v_atom_drc_constraints;
+SELECT * FROM v_atom_drc_exists_variables;
+SELECT * FROM v_atom_drc_forall_variables;
+SELECT * FROM v_query_drc;
 
 
 
