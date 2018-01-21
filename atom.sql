@@ -27,18 +27,6 @@ CREATE TABLE t_atom_symbol (
   PRIMARY KEY(atm_id, ats_position)
 );
 
-CREATE VIEW v_atom_key AS (
-  SELECT atm_id, sbl_id, ats_position
-  FROM t_atom_symbol
-  WHERE ats_key
-);
-
-CREATE VIEW v_atom_nkey AS (
-  SELECT atm_id, sbl_id, ats_position
-  FROM t_atom_symbol
-  WHERE NOT ats_key
-);
-
 CREATE VIEW v_atom_relation_name_string AS (
   SELECT atm_id, CASE
       WHEN atm_relation_name ~ '^[a-zA-Z_-]+$' THEN atm_relation_name
@@ -47,25 +35,14 @@ CREATE VIEW v_atom_relation_name_string AS (
   FROM t_atom
 );
 
-CREATE VIEW v_atom_key_string AS (
-  SELECT atm_id, string_agg(sbl_string, ', ' ORDER BY ats_position) AS atm_key_string
-  FROM v_atom_key
-  NATURAL JOIN v_symbol_string
-  GROUP BY atm_id
-);
-
-CREATE VIEW v_atom_nkey_string AS (
-  SELECT atm_id, string_agg(sbl_string, ', ' ORDER BY ats_position) AS atm_nkey_string
-  FROM v_atom_nkey
-  NATURAL JOIN v_symbol_string
-  GROUP BY atm_id
-);
-
-CREATE VIEW v_atom_string AS (
-  SELECT atm_id, atm_relation_name_string || '(' || atm_key_string || '; ' || atm_nkey_string || ')' AS atm_string
-  FROM t_atom
-  NATURAL JOIN v_atom_relation_name_string
-  NATURAL JOIN v_atom_key_string
-  NATURAL JOIN v_atom_nkey_string
-);
+CREATE VIEW v_atom_string AS
+SELECT atm_id,
+    atm_relation_name_string || '(' ||
+      string_agg(sbl_string, ', ' ORDER BY ats_position) FILTER (WHERE ats_key) || '; ' ||
+      string_agg(sbl_string, ', ' ORDER BY ats_position) FILTER (WHERE NOT ats_key) || ')'
+    AS atm_string
+FROM v_atom_relation_name_string
+LEFT JOIN t_atom_symbol USING (atm_id)
+LEFT JOIN v_symbol_string USING (sbl_id)
+GROUP BY atm_id, atm_relation_name_string;
 

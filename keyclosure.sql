@@ -17,21 +17,11 @@
 CREATE EXTENSION intarray;
 
 CREATE VIEW v_atom_varlists AS
-WITH key AS (
-  SELECT ta.atm_id, array_remove(array_agg(ts.sbl_id), NULL) AS atm_keylist
-  FROM t_atom ta
-  LEFT JOIN t_atom_symbol tas ON ta.atm_id = tas.atm_id AND tas.ats_key
-  LEFT JOIN t_symbol ts ON ts.sbl_id = tas.sbl_id AND NOT sbl_constant
-  GROUP BY ta.atm_id
-), nkey AS (
-  SELECT ta.atm_id, array_remove(array_agg(ts.sbl_id), NULL) AS atm_nkeylist
-  FROM t_atom ta
-  LEFT JOIN t_atom_symbol tas ON ta.atm_id = tas.atm_id AND NOT tas.ats_key
-  LEFT JOIN t_symbol ts ON ts.sbl_id = tas.sbl_id AND NOT sbl_constant
-  GROUP BY ta.atm_id
-)
-SELECT atm_id, atm_keylist, atm_nkeylist--, (atm_keylist | atm_nkeylist) AS atm_varslist, (atm_nkeylist - atm_keylist) AS atm_varsminuskeylist
-FROM key NATURAL JOIN nkey;
+SELECT ta.atm_id, array_agg(tas.sbl_id) FILTER(WHERE ats_key) AS atm_keylist, array_agg(tas.sbl_id) FILTER(WHERE NOT ats_key) AS atm_nkeylist
+FROM t_atom ta
+LEFT JOIN t_atom_symbol tas ON ta.atm_id = tas.atm_id
+LEFT JOIN t_symbol ts ON ts.sbl_id = tas.sbl_id AND NOT sbl_constant
+GROUP BY ta.atm_id;
 
 CREATE VIEW v_keyclosure AS
 WITH RECURSIVE T AS (
